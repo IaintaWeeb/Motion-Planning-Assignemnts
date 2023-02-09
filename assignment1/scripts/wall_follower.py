@@ -85,7 +85,7 @@ def take_action():
 def find_wall():
     msg = Twist()
     msg.linear.x = 0.067
-    msg.angular.z = -0.1
+    msg.angular.z = -0.3
     return msg
 
 # Turn left

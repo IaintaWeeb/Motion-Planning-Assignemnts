@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 
 # import ros stuff
 import rospy
@@ -19,7 +19,7 @@ state_ = 0
 # goal
 desired_position_ = Point()
 desired_position_.x = 2.5
-desired_position_.y = 2.5
+desired_position_.y = -2.5
 desired_position_.z = 0
 # parameters
 yaw_precision_ = math.pi / 90 # +/- 2 degree allowed
@@ -137,6 +137,7 @@ def main():
                 go_straight_ahead(desired_position_)
             elif state_ == 2:
                 done()
+                break
             else:
                 rospy.logerr('Unknown state!')
         

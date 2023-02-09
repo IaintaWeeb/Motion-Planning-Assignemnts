@@ -12,6 +12,7 @@ from std_srvs.srv import *
 
 import math
 import numpy as np
+curcumnavigated=False
 # Initializing some Global variables
 # activates the wall_follower, go_to_point program
 srv_client_go_to_point_ = None 
@@ -26,8 +27,8 @@ initial_position_.x = 0
 initial_position_.y = 0
 initial_position_.z = 0
 desired_position_ = Point()
-desired_position_.x = -2.5
-desired_position_.y = 2.5
+desired_position_.x = 2.5
+desired_position_.y = -2.5
 desired_position_.z = 0
 # datafrom laserscan divided into front,left and right
 regions_ = {
@@ -139,9 +140,10 @@ def main():
             continue
         
         if state_ == 0:
-            if regions_['front'] > 0.10 and regions_['front'] < 0.4:
+            if regions_['front'] > 0.10 and regions_['front'] < 0.3:
                 p_leave = position_
                 p_hit = position_
+                count_state_time_=0
                 change_state(1)
         
         elif state_ == 1:
@@ -151,7 +153,7 @@ def main():
                 
             # compare only after 5 seconds - need some time to get out of starting_point
             # if robot reaches (is close to) starting point
-            if count_state_time_ > 5 and \
+            if count_state_time_ > 20 and \
                calc_dist_points(position_, p_hit) < 0.2:
                 change_state(2)
         

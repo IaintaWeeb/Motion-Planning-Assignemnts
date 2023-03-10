@@ -12,15 +12,17 @@ import math
 state_=0 
 # state = 0 : heading
 # state = 1 : move
+# state = 2 : done
 position_ = Point()
 yaw_=0
 r_pos=np.array([position_.x,position_.y])
 pos_list=[]
 # machine state
 # goal
+w=[1,1,1,1,1]
 desired_position_ = Point()
-desired_position_.x = 1
-desired_position_.y = -3
+desired_position_.x = -0.25
+desired_position_.y = 3
 desired_position_.z = 0
 g_pos=np.array([desired_position_.x,desired_position_.y])
 ob1_pos=np.array([0,2])
@@ -29,10 +31,10 @@ ob3_pos=np.array([0,-2])
 ob4_pos=np.array([-1.5,0])
 # parameters
 yaw_precision_ = math.pi / 90 # +/- 2 degree allowed
-dist_precision_=0.2
+dist_precision_=0.02
 zeta=0.05
 eta=0.05
-# publishers
+# publisher
 pub = None
 # callbacks
 def clbk_odom(msg):
@@ -60,10 +62,10 @@ def dist_pos(point1,point2):
 def F_att():
     dist_goal=dist_pos(r_pos,g_pos)
     if dist_goal < 1:
-        return zeta*(g_pos-r_pos)
+        return 4*zeta*(g_pos-r_pos)
     else:
         return zeta*(g_pos-r_pos)/dist_goal
-# repulsive fields
+# repulsive fields : as a function of q and obstacle
 def F_rep(ob,q):
     dist_ob = dist_pos(r_pos,ob)
     if dist_ob < q:
@@ -77,14 +79,16 @@ def normalize_angle(angle):
         angle = angle - (2 * math.pi * angle) / (math.fabs(angle))
     return angle
 
+# State Controller
 def change_state(state):
     global state_
     state_ = state
     print('State changed to [%s]' % state_)
 
+# Controls the heading of the Robot : towards the resultant magnetic field
 def heading():
-    global yaw_, pub, yaw_precision_
-    F_total=F_att()+F_rep(ob1_pos,1)+F_rep(ob2_pos,2)+F_rep(ob3_pos,1)+F_rep(ob4_pos,2) 
+    global yaw_, pub, yaw_precision_,w
+    F_total=w[0]*F_att()+w[1]*F_rep(ob1_pos,1)+w[2]*F_rep(ob2_pos,1)+w[3]*F_rep(ob3_pos,1)+w[4]*F_rep(ob4_pos,1) 
     desired_yaw= math.atan2(F_total[1],F_total[0])
     err_yaw = normalize_angle(desired_yaw - yaw_)
     twist_msg = Twist()
@@ -92,7 +96,7 @@ def heading():
     rospy.loginfo(err_yaw)
     twist_msg = Twist()
     if math.fabs(err_yaw) > yaw_precision_:
-        twist_msg.angular.z = 0.233 if err_yaw > 0 else -0.233
+        twist_msg.angular.z = 0.1 if err_yaw > 0 else -0.1
     
     pub.publish(twist_msg)
     
@@ -101,9 +105,10 @@ def heading():
         print('Yaw error: [%s]' % err_yaw)
         change_state(1)
 
+# Velocity control : magnitude of resultant force
 def move():
-    global yaw_, pub, yaw_precision_, state_
-    F_total=F_att()+F_rep(ob1_pos,1)+F_rep(ob2_pos,2)+F_rep(ob3_pos,1)+F_rep(ob4_pos,2)
+    global yaw_, pub, yaw_precision_, state_, dist_precision_
+    F_total=w[0]*F_att()+w[1]*F_rep(ob1_pos,1)+w[2]*F_rep(ob2_pos,1)+w[3]*F_rep(ob3_pos,1)+w[4]*F_rep(ob4_pos,1) 
     desired_yaw = math.atan2(F_total[1],F_total[0])
     velocity=dist_pos(F_total,0)
     print(velocity)
@@ -134,14 +139,13 @@ def main():
     
     rospy.init_node('APF')
     # This node publishes to the /cmd_vel topic
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+    pub = rospy.Publisher('/tb3_2/cmd_vel', Twist, queue_size=1)
     # This node subscribes to the /odom topic
-    rospy.Subscriber('/odom', Odometry, clbk_odom)
-    #Service Declaration 
+    rospy.Subscriber('/tb3_2/odom', Odometry, clbk_odom)
     
     rate = rospy.Rate(20)
     while not rospy.is_shutdown():
-        print(F_att(),F_rep(ob1_pos,1),F_rep(ob2_pos,2),F_rep(ob3_pos,1),F_rep(ob2_pos,2),r_pos)
+        print(F_att(),F_rep(ob1_pos,1),F_rep(ob2_pos,1),F_rep(ob3_pos,1),F_rep(ob2_pos,1),r_pos)
         if state_ == 0:
             heading()
         elif state_ == 1:

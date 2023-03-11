@@ -15,7 +15,6 @@ for i,node in enumerate(path):
     if i%20==0:
         a=node.split(',')
         co_ordinate.append([float(a[0]),float(a[1])])
-co_ordinate=[[0. , 3.5], [0.025990201108921245, 3.249569428646434], [1.150000000000003, 2.986228606900573], [1.7416544365420272, 1.9275181689068903], [0.5424053596465499, 0.9695323623618224], [-0.09924470453726442, -0.01344572102397941]]
 co_ordinate.reverse()
 # robot state variables
 position_ = Point()
@@ -119,7 +118,7 @@ def reached(node):
 def main():
     global pub, co_ordinate
     
-    rospy.init_node('go_to_point')
+    rospy.init_node('go_to_point_voronoi')
     # This node publishes to the /cmd_vel topic
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
     # This node subscribes to the /odom topic

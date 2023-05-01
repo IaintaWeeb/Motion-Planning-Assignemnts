@@ -68,7 +68,7 @@ def gradient_descent(i):
     head_inp=0
     for j in range(4):
         head_inp=head_inp+(np.sin(yaw_[j]-yaw_[i]))
-    return 0.1*head_inp
+    return 0.5*head_inp
                            
 
 # This function returns true if synchronization is achieved
@@ -82,7 +82,7 @@ def is_synced():
         return False
     else:
         if std_ < std_threshhold:
-            return True
+            return False
         else:
             return False
     
@@ -95,7 +95,7 @@ def heading():
         th.angular.z=gradient_descent(i)
         th.linear.x = 0.05
         pub[i].publish(th)
-    # synced=is_synced()
+    synced=is_synced()
 
 # stops the function after synchronization is achieved
 def done():
@@ -111,15 +111,15 @@ def main():
     
     rospy.init_node('MA_sync')
     # This node publishes to the /cmd_vel topic
-    pub[0]= rospy.Publisher('/tb3_2/cmd_vel', Twist, queue_size=1)
-    pub[1]= rospy.Publisher('/tb3_5/cmd_vel', Twist, queue_size=1)
-    pub[2]= rospy.Publisher('/tb3_2/cmd_vel', Twist, queue_size=1)
+    pub[0]= rospy.Publisher('/tb3_0/cmd_vel', Twist, queue_size=1)
+    pub[1]= rospy.Publisher('/tb3_3/cmd_vel', Twist, queue_size=1)
+    pub[2]= rospy.Publisher('/tb3_4/cmd_vel', Twist, queue_size=1)
     pub[3]= rospy.Publisher('/tb3_5/cmd_vel', Twist, queue_size=1)
 
     # This node subscribes to the /odom topic
-    rospy.Subscriber('/tb3_3/odom', Odometry, clbk_bot1)
-    rospy.Subscriber('/tb3_5/odom', Odometry, clbk_bot2)
-    rospy.Subscriber('/tb3_2/odom', Odometry, clbk_bot3)
+    rospy.Subscriber('/tb3_0/odom', Odometry, clbk_bot1)
+    rospy.Subscriber('/tb3_3/odom', Odometry, clbk_bot2)
+    rospy.Subscriber('/tb3_4/odom', Odometry, clbk_bot3)
     rospy.Subscriber('/tb3_5/odom', Odometry, clbk_bot4)
 
     rate = rospy.Rate(20)

@@ -12,7 +12,6 @@ import math
 # state = 0 : sync
 # state = 1 : done
 state_=0 
-# iters=0
 yaw_=np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,10.0])
 synced=False
 # parameters : 
@@ -107,7 +106,7 @@ def gradient_descent(i):
     global yaw_
     head_inp=0
     for j in range(8):
-        head_inp=head_inp+(np.sin(yaw_[j])-np.sin(yaw_[i]))
+        head_inp=head_inp+(np.sin(yaw_[j])-yaw_[i])
     return 0.1*head_inp
                            
 

@@ -126,7 +126,7 @@ def heading():
     for i in range(8):
         th=Twist()
         th.angular.z=gradient_descent(i)
-        th.linear.x = 0.05
+        th.linear.x = 0.1
         pub[i].publish(th)
 
 
